@@ -242,7 +242,7 @@ class CdmBatchIngestionJob(object):
         entities: List[CdmEntity],
         mode: str = MODE_APPEND,
         update_log: bool = True,
-        enrich_with_string_map: bool = True,
+        enrich_with_option_map: bool = True,
     ):
         if update_log:
             self.log_entries = list()
@@ -252,7 +252,7 @@ class CdmBatchIngestionJob(object):
                 entity=entity,
                 mode=mode,
                 update_log=False,
-                enrich_with_string_map=enrich_with_string_map,
+                enrich_with_option_map=enrich_with_option_map,
             )
 
         if update_log:
@@ -264,7 +264,7 @@ class CdmBatchIngestionJob(object):
         entity: CdmEntity,
         mode: str = MODE_APPEND,
         update_log: bool = False,
-        enrich_with_string_map: bool = True,
+        enrich_with_option_map: bool = True,
     ) -> None:
         if update_log:
             self.log_entries = list()
@@ -277,8 +277,8 @@ class CdmBatchIngestionJob(object):
             print(f"{entity.name} - copy_cdm_entity_to_destination - Nothing to do")
             return
 
-        if enrich_with_string_map:
-            entity_df = self._enrich_with_string_map(entity_df, entity.name)
+        if enrich_with_option_map:
+            entity_df = self._enrich_with_option_map(entity_df, entity.name)
 
         copy_start_time = datetime.now()
 
@@ -408,17 +408,17 @@ class CdmBatchIngestionJob(object):
 
         return [b.target_blob_url for b in blobs]
 
-    def _enrich_with_string_map(
+    def _enrich_with_option_map(
         self, entity_df: DataFrame, entity_name: str
     ) -> DataFrame:
-        sm_reader = StringMapReaderJob(self.spark, self.environment)
-        metadata_df = sm_reader.read_string_map(entity_name)
+        sm_reader = OptionMapReaderJob(self.spark, self.environment)
+        metadata_df = sm_reader.read_option_map(entity_name)
         if metadata_df.isEmpty():
             return entity_df
 
         option_names = metadata_df.select("OptionSetName").distinct().collect()
         print(
-            f"{entity_name} - enrich_with_string_map - Options: [{','.join([o.OptionSetName for o in option_names])}]"
+            f"{entity_name} - enrich_with_option_map - Options: [{','.join([o.OptionSetName for o in option_names])}]"
         )
 
         df = entity_df
@@ -580,7 +580,7 @@ class CdmToDeltaIngestionJob(CdmBatchIngestionJob):
         )
 
 
-class StringMapReaderJob(object):
+class OptionMapReaderJob(object):
     df_schema = T._parse_datatype_string(
         "EntityName STRING, IsUserLocalizedLabel BOOLEAN, LocalizedLabel STRING, LocalizedLabelLanguageCode LONG, Option LONG, OptionSetName STRING"
     )
@@ -589,14 +589,14 @@ class StringMapReaderJob(object):
         self.spark = spark
         self.environment = environment
 
-    def read_string_map(
+    def read_option_map(
         self, entity_name: str, label_language_code: int = 1040
     ) -> DataFrame:
         try:
             metadata_path = f"{self.environment.cdm_root_path}/Microsoft.Athena.TrickleFeedService/{entity_name}-EntityMetadata.json"
             source_df = self.spark.read.format("json").load(metadata_path)
         except:
-            print(f"{entity_name} - read_string_map - Metadata not found!")
+            print(f"{entity_name} - read_option_map - Metadata not found!")
             return self.spark.createDataFrame([], self.df_schema)
 
         options_df = source_df.select(
@@ -610,9 +610,9 @@ class StringMapReaderJob(object):
         global_options_cnt = global_options_df.count()
 
         print(
-            f"{entity_name} - read_string_map - Global Options count = {global_options_cnt}"
+            f"{entity_name} - read_option_map - Global Options count = {global_options_cnt}"
         )
-        print(f"{entity_name} - read_string_map - Options count = {options_cnt}")
+        print(f"{entity_name} - read_option_map - Options count = {options_cnt}")
 
         metadata_df = self.spark.createDataFrame([], schema=self.df_schema)
 
@@ -655,30 +655,14 @@ class StringMapReaderJob(object):
 
         metadata_df = metadata_df.distinct().persist()
         print(
-            f"{entity_name} - read_string_map - Combined Options count = {metadata_df.count()}"
+            f"{entity_name} - read_option_map - Combined Options count = {metadata_df.count()}"
         )
 
         return metadata_df
 
     def patch_dataframe(self, df: DataFrame, entity_name: str) -> DataFrame:
-        if entity_name == "incident":
-            print("read_string_map - FIX E-MAIL")
-            patched_df = df.withColumn(
-                "LocalizedLabel",
-                F.when(F.col("LocalizedLabel") == "E-mail", "Email").otherwise(
-                    F.col("LocalizedLabel")
-                ),
-            )
-        elif entity_name == "egl_billingpreference":
-            print("read_string_map - FIX Bollettino postale")
-            patched_df = df.withColumn(
-                "LocalizedLabel",
-                F.when(
-                    F.col("LocalizedLabel") == "Bollettino postale",
-                    "Avviso di pagamento",
-                ).otherwise(F.col("LocalizedLabel")),
-            )
-        else:
-            patched_df = df
+        patched_df = df
+        
+        ## Implement here a custom logic to patch the option map based on the entity
 
         return patched_df

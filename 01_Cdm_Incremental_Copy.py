@@ -26,16 +26,16 @@ client_id = 'ed573937-9c53-4ed6-b016-929e765443eb'
 client_secret = dbutils.secrets.get('oneenvkeys', 'adls-app-key')
 
 # Storage details
-account_name = "plenitudecdmtest"
+account_name = "storage_account_name"
 source_container_name = "dataflow-cdm"
 target_container_name = "dataflow-cdm"
 
-cdm_root_path = '/Volumes/main/default/vv_plenitude_dataflow_cdm'
-parquet_destination_root_path = '/Volumes/main/default/vv_plenitude_dataflow_cdm/_parquet_destination'
+cdm_root_path = '/Volumes/main/default/vv_dataflow_cdm'
+parquet_destination_root_path = '/Volumes/main/default/vv_dataflow_cdm/_parquet_destination'
 log_schema = "cdm_test_catalog.default"
 table_schema = "cdm_test_catalog.dest_schema"
 
-entities = ["egl_intent"]
+entities = ["account"]
 
 environment = Environment(
     tenant_id=tenant_id,

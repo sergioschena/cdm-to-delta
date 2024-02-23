@@ -9,7 +9,7 @@ def copy_range_from_url(
     source_authorization: str,
     offset: int,
     length: int,
-    # append: bool = False,
+    append: bool = False,
     max_block_size: int = 100 * 1024 * 1024,
     max_uncommited_blocks: int = 50000,
 ):
@@ -39,9 +39,9 @@ def copy_range_from_url(
 
     block_list: List[BlobBlock] = list()
 
-    # if append and blob_client.exists(target_uri):
-    #     blocks: List[BlobBlock] = blob_client.get_block_list(target_uri)[0]
-    #     block_list.append(blocks)
+    if append and target_blob_client.exists():
+        blocks: List[BlobBlock] = target_blob_client.get_block_list()[0]
+        block_list.extend(blocks)
 
     target = offset + length
     uncommitted_blocks = 0

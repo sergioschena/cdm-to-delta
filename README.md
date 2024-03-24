@@ -54,7 +54,7 @@ The methods take the following arguments:
   - `entities`: list of `CdmEntity` to ingest.
   - `mode`: the copy mode, either append, upsert, or full.
   - `update_log`: a flag indicating whether to write to the log table. It defaults to `True` on the multi-entity copy, while it is `False` for the single entity.
-  - `enrich_with_string_map`: a flag indicating whether to add description translations, fetched by the `StringMapReaderJob` to the dataset.
+  - `enrich_with_option_map`: a flag indicating whether to add description translations, fetched by the `OptionMapReaderJob` to the dataset.
 
 * `persist_log_entries`:
 This methods appends the log entries of the current copy process to the log table.
@@ -65,8 +65,8 @@ This method reads and parses the CSV files from the incremental CSV location. Th
 1. It reads the files that have been already processed by a previous run from the log table.
 1. For the full mode, all the files from the step **1.** are returned, otherwise the diff between **1.** and **2.** is returned.
 
-* `_enrich_with_string_map`:
-This method reads the entity localized descriptions using the `StringMapReaderJob` and appends the descriptions for all the available columns to the dataset.
+* `_enrich_with_option_map`:
+This method reads the entity localized descriptions using the `OptionMapReaderJob` and appends the descriptions for all the available columns to the dataset.
 
 * `_copy_to_destination`: 
 Abstract method that copy the read dataset to the destionation.
@@ -89,14 +89,14 @@ It is mandatory to specify `delta_destination_schema` in the `Environment` to us
 
 It support all the modes.
 
-### `StringMapReaderJob`
+### `OptionMapReaderJob`
 
 This job is responsible of reading the localized descriptions from `Microsoft.Athena.TrickleFeedService` folder for a given entity.
 It fetches both global and entity specific description and offers also the possibility of patching the dataset before returning it.
 
 #### Methods
 
-* `read_string_map`:
+* `read_option_map`:
 It reads the entity metadata from the JSON file under the TrikleFeedService folder, merges entity and global options in a single dataframe, filter the descriptions of `label_language_code` language and patches the dataframe using `patch_dataframe`. It return a dataframe with the following columns:
   - `EntityName`
   - `IsUserLocalizedLabel`

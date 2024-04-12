@@ -3,7 +3,7 @@
 
 # COMMAND ----------
 
-from databricks.sdk.runtime import *
+from databricks.sdk.runtime import dbutils, display, spark
 
 dbutils.library.restartPython()
 
@@ -18,20 +18,20 @@ from cdm_to_delta.model import (
     Environment,
     CdmManifest,
 )
-from cdm_to_delta.jobs import CdmToDeltaIngestionJob, CdmToParquetIngestionJob
+from cdm_to_delta.jobs import CdmToDeltaIngestionJob, CdmToParquetIngestionJob  # noqa: F401
 
 # Credentials
-tenant_id = '9f37a392-f0ae-4280-9796-f1864a10effc'
-client_id = 'ed573937-9c53-4ed6-b016-929e765443eb'
-client_secret = dbutils.secrets.get('oneenvkeys', 'adls-app-key')
+tenant_id = "<service-principal-tenant-id>"
+client_id = "<service-principal-client-id>"
+client_secret = dbutils.secrets.get("oneenvkeys", "adls-app-key")
 
 # Storage details
 account_name = "storage_account_name"
 source_container_name = "dataflow-cdm"
 target_container_name = "dataflow-cdm"
 
-cdm_root_path = '/Volumes/main/default/vv_dataflow_cdm'
-parquet_destination_root_path = '/Volumes/main/default/vv_dataflow_cdm/_parquet_destination'
+cdm_root_path = "/Volumes/main/default/vv_dataflow_cdm"
+parquet_destination_root_path = "/Volumes/main/default/vv_dataflow_cdm/_parquet_destination"
 log_schema = "cdm_test_catalog.default"
 table_schema = "cdm_test_catalog.dest_schema"
 
@@ -49,7 +49,7 @@ environment = Environment(
     log_schema_name=log_schema,
     incremental_csv_container_path=cdm_root_path,
     parquet_destination_root_path=parquet_destination_root_path,
-    delta_destination_schema=table_schema
+    delta_destination_schema=table_schema,
 )
 
 # COMMAND ----------
@@ -65,8 +65,11 @@ ingestion_job = CdmToParquetIngestionJob(spark, environment)
 
 # COMMAND ----------
 
-ingestion_job.copy_cdm_entities_to_destination(entities=manifest.get_entities().values(), update_log=True, mode=CdmToParquetIngestionJob.MODE_APPEND)
+ingestion_job.copy_cdm_entities_to_destination(
+    entities=manifest.get_entities().values(), update_log=True, mode=CdmToParquetIngestionJob.MODE_APPEND
+)
 
 # COMMAND ----------
 
-display(ingestion_job.log_entries)
+if ingestion_job.log_entries:
+    display(ingestion_job.log_entries)

@@ -1,0 +1,30 @@
+Copyright (2022) Databricks, Inc.
+
+This Software includes software developed at Databricks (https://www.databricks.com/) and its use is subject to the included LICENSE file.
+—--
+
+This Software contains code from the following open source projects, licensed under the Apache 2.0 license:
+
+spark/python/pyspark - https://github.com/apache/spark/tree/master/python/pyspark
+Copyright 2014 and onwards The Apache Software Foundation.
+
+databricks/databricks-sdk-py - https://github.com/databricks/databricks-sdk-py
+Copyright (2023) Databricks, Inc.
+—--
+
+This Software contains code from the following open source projects, licensed under the BSD 3-Clause license:
+
+pandas-dev/pandas - https://github.com/pandas-dev/pandas
+Copyright (c) 2008-2011, AQR Capital Management, LLC, Lambda Foundry, Inc. and PyData Development Team. All rights reserved.
+—--
+
+This Software contains code from the following open source projects, licensed under the MIT license:
+
+Azure/azure-sdk-for-python/azure-identity - https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/identity/azure-identity
+Copyright (c) Microsoft Corporation
+
+Azure/azure-sdk-for-python/azure-storage-blob - https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-blob
+Copyright (c) Microsoft Corporation
+
+Azure/dataverse-to-sql - https://github.com/Azure/dataverse-to-sql
+Copyright (c) Microsoft Corporation
